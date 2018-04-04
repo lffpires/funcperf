@@ -7,27 +7,86 @@
 #include <stdint.h>
 #include <dlfcn.h>
 
+void runTest(int bytesToCopy, int srcOffset, int dstOffset, int iterations);
+
 int main(int argc, char** argv)
 {
+	bool fast = false;
+	// TODO: implement proper arg handling
+	if (argc > 1 && strcmp(argv[1], "--fast") == 0) {
+		fast = true;
+	}
+
+	std::cout << "bytesToCopy,srcOffset,dstOffset,iterations,nanoReference,nanoCandidate,testResult" << std::endl;
+
+	for (int bytesToCopy = 1; bytesToCopy <= 8*1024*1024; bytesToCopy *= 2) {
+		int iterations = 1;
+		if (!fast) {
+			if (bytesToCopy < 256) {
+				iterations = 200000;
+			} else if (bytesToCopy < 1024*1024) {
+				iterations = 20000;
+			} else {
+				iterations = 1000;
+			}
+		}
+
+		int srcOffset = 0;
+		for (int srcOffsetIdx = 0; srcOffsetIdx < 5; srcOffsetIdx++) {
+			int dstOffset = 0;
+			for (int dstOffsetIdx = 0; dstOffsetIdx < 5; dstOffsetIdx++) {
+				runTest(bytesToCopy, srcOffset, dstOffset, iterations);
+
+				if (dstOffset > 0) {
+					dstOffset *= 2;
+				} else {
+					dstOffset = 1;
+				}
+			}
+
+			if (srcOffset > 0) {
+				srcOffset *= 2;
+			} else {
+				srcOffset = 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
+void runTest(int bytesToCopy, int srcOffset, int dstOffset, int iterations)
+{
+	//std::cout << "Testing bytesToCopy=[" << bytesToCopy << "] srcOffset=[" << srcOffset << "] dstOffset=[" << dstOffset <<
+	//		"] iterations=[" << iterations << "]..." << std::endl;
+
 	funcperf::TestRunner testRunner;
 
-	funcperf::string::MemcpyTest memcpyTestReference(10*1024*1024, &memcpy);
-	int64_t nanoDiffReference = testRunner.runTest(memcpyTestReference, 1000);
+	funcperf::string::MemcpyTest memcpyTestReference(bytesToCopy, srcOffset, dstOffset, &memcpy);
+	int64_t nanoReference = testRunner.runTest(memcpyTestReference, iterations, NULL);
 
 	// load candidate shared library
 	void *soHandle = dlopen("/usr/obj/usr/src/powerpc.powerpc64/lib/libc/libc.so.7", RTLD_NOW);
 	if (soHandle == NULL) {
 		std::cerr << "Error loading shared library\n" << std::endl;
-		return 1;
 	}
 
 	void* (*candidateFunc)(void* dst, const void* src, size_t len) = (void* (*)(void*, const void*, size_t))dlfunc(soHandle, "memcpy");
 
-	funcperf::string::MemcpyTest memcpyTestCandidate(10*1024*1024, candidateFunc);
-	int64_t nanoDiffCandidate = testRunner.runTest(memcpyTestCandidate, 1000);
+	funcperf::string::MemcpyTest memcpyTestCandidate(bytesToCopy, srcOffset, dstOffset, candidateFunc);
+	//int64_t nanoCandidate = testRunner.runTest(memcpyTestCandidate, iterations);
+	bool testResult;
+	int64_t nanoCandidate = testRunner.runTest(memcpyTestCandidate, iterations, &testResult);
 
-	std::cout << "Reference time: " << static_cast<double>(nanoDiffReference) / 1000000  << "ms." << std::endl;
-	std::cout << "Candidate time: " << static_cast<double>(nanoDiffCandidate) / 1000000  << "ms." << "(" << (100.0 * nanoDiffCandidate) / nanoDiffReference << "%)" << std::endl;
+	//bool testResult = memcpyTestCandidate.verify();
+
+	//std::cout << "Test result: " << (testResult ? "SUCCESS" : "FAILURE") << std::endl;
+
+	//std::cout << "Reference time: " << static_cast<double>(nanoReference) / 1000  << "us." << std::endl;
+	//std::cout << "Candidate time: " << static_cast<double>(nanoCandidate) / 1000  << "us." << "(" << (100.0 * nanoCandidate) / nanoReference << "%)" << std::endl;
+
+	std::cout << bytesToCopy << "," << srcOffset << "," << dstOffset << "," << iterations << ",";
+	std::cout << nanoReference << "," << nanoCandidate << "," << (testResult ? "SUCCESS" : "FAILURE") << std::endl;
 
 	dlclose(soHandle);
 }
