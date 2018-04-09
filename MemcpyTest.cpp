@@ -19,7 +19,8 @@ MemcpyTest::MemcpyTest(int bytesToCopy, int srcOffset, int dstOffset, void* (*fu
 
 	long* longPtr = (long*)m_buffer;
 	for (int i = 0; i < m_bufferSize / sizeof(long); i++) {
-		longPtr[i] = random();
+		//longPtr[i] = random();
+		longPtr[i] = i % 0xfe;
 	}
 
 	// prepare verification buffer

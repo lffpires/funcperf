@@ -1,5 +1,6 @@
 #include "TestRunner.hpp"
 
+#include <algorithm>
 #include <ctime>
 
 namespace funcperf {
@@ -12,7 +13,7 @@ int64_t TestRunner::runTest(ITest& test, int iterations, bool* verifyResult)
 {
 	int res;
 	struct timespec tp0, tp1;
-	//int64_t nanos[iterations];
+	int64_t nanos[iterations];
 	int64_t totalSum = 0;
 	int totalValidMeasures = 0;
 
@@ -29,8 +30,8 @@ int64_t TestRunner::runTest(ITest& test, int iterations, bool* verifyResult)
 			uint64_t nano0 = (1000000000LL * tp0.tv_sec) + tp0.tv_nsec;
 			uint64_t nano1 = (1000000000LL * tp1.tv_sec) + tp1.tv_nsec;
 
-			//nanos[totalValidMeasures++] = nano1 - nano0;
-			totalValidMeasures++;
+			nanos[totalValidMeasures++] = nano1 - nano0;
+			//totalValidMeasures++;
 			totalSum += (nano1 - nano0);
 		}
 
@@ -43,7 +44,11 @@ int64_t TestRunner::runTest(ITest& test, int iterations, bool* verifyResult)
 		*verifyResult = tmpVerifyResult;
 	}
 
-	return totalSum / totalValidMeasures;
+	//return totalSum / totalValidMeasures;
+
+	// return an approximation of the median
+	std::sort(nanos, nanos + totalValidMeasures);
+	return nanos[totalValidMeasures / 2];
 }
 
 }

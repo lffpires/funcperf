@@ -12,16 +12,29 @@ void runTest(int bytesToCopy, int srcOffset, int dstOffset, int iterations);
 int main(int argc, char** argv)
 {
 	bool fast = false;
+	bool medium = false;
 	// TODO: implement proper arg handling
 	if (argc > 1 && strcmp(argv[1], "--fast") == 0) {
 		fast = true;
+	} else if (argc > 1 && strcmp(argv[1], "--medium") == 0) {
+		medium = true;
 	}
 
-	std::cout << "bytesToCopy,srcOffset,dstOffset,iterations,nanoReference,nanoCandidate,testResult" << std::endl;
+	std::cout << "bytesToCopy\tsrcOffset\tdstOffset\titerations\tnanoReference\tnanoCandidate\ttestResult" << std::endl;
 
 	for (int bytesToCopy = 1; bytesToCopy <= 8*1024*1024; bytesToCopy *= 2) {
-		int iterations = 1;
-		if (!fast) {
+		int iterations;
+		if (fast) {
+			iterations = 1;
+		} else if (medium) {
+			if (bytesToCopy < 256) {
+				iterations = 2000;
+			} else if (bytesToCopy < 1024*1024) {
+				iterations = 2000;
+			} else {
+				iterations = 100;
+			}
+		} else {
 			if (bytesToCopy < 256) {
 				iterations = 200000;
 			} else if (bytesToCopy < 1024*1024) {
@@ -32,10 +45,15 @@ int main(int argc, char** argv)
 		}
 
 		int srcOffset = 0;
-		for (int srcOffsetIdx = 0; srcOffsetIdx < 5; srcOffsetIdx++) {
+		for (int srcOffsetIdx = 0; srcOffsetIdx < 8; srcOffsetIdx++) {
 			int dstOffset = 0;
-			for (int dstOffsetIdx = 0; dstOffsetIdx < 5; dstOffsetIdx++) {
+			for (int dstOffsetIdx = 0; dstOffsetIdx < 8; dstOffsetIdx++) {
+				// overlapping test
 				runTest(bytesToCopy, srcOffset, dstOffset, iterations);
+
+				// non-overlapping test
+				runTest(bytesToCopy, srcOffset, 8*1024*1024 + dstOffset, iterations);
+				runTest(bytesToCopy, 8*1024*1024 + srcOffset, dstOffset, iterations);
 
 				if (dstOffset > 0) {
 					dstOffset *= 2;
@@ -85,8 +103,8 @@ void runTest(int bytesToCopy, int srcOffset, int dstOffset, int iterations)
 	//std::cout << "Reference time: " << static_cast<double>(nanoReference) / 1000  << "us." << std::endl;
 	//std::cout << "Candidate time: " << static_cast<double>(nanoCandidate) / 1000  << "us." << "(" << (100.0 * nanoCandidate) / nanoReference << "%)" << std::endl;
 
-	std::cout << bytesToCopy << "," << srcOffset << "," << dstOffset << "," << iterations << ",";
-	std::cout << nanoReference << "," << nanoCandidate << "," << (testResult ? "SUCCESS" : "FAILURE") << std::endl;
+	std::cout << bytesToCopy << "\t" << srcOffset << "\t" << dstOffset << "\t" << iterations << "\t";
+	std::cout << nanoReference << "\t" << nanoCandidate << "\t" << (testResult ? "SUCCESS" : "FAILURE") << std::endl;
 
 	dlclose(soHandle);
 }
