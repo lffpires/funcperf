@@ -127,5 +127,7 @@ int main(int argc, char** argv)
 		std::cout << nanos << "\t" << (testResult ? "SUCCESS" : "FAILURE") << std::endl;
 	}
 
+	dlclose(soHandle);
+
 	return 0;
 }
