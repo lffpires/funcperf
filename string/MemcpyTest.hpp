@@ -2,6 +2,8 @@
 
 #include "ITest.hpp"
 
+#include "MemcpyTestParams.hpp"
+
 #include <cstddef>
 
 namespace funcperf {
@@ -10,16 +12,18 @@ namespace string {
 class MemcpyTest : public funcperf::ITest
 {
 public:
-	MemcpyTest(int bufferSize, void* (*func)(void* dst, const void* src, size_t len));
+	MemcpyTest(const MemcpyTestParams& testParams);
 	virtual ~MemcpyTest();
 
-	void run();
+	void run(void* func);
+	bool verify();
 
 private:
+	MemcpyTestParams m_testParams;
+
+	char* m_buffer;
+	char* m_verifyBuffer;
 	int m_bufferSize;
-	void* (*m_func)(void* dst, const void* src, size_t len);
-	void* m_srcBuffer;
-	void* m_dstBuffer;
 };
 
 }

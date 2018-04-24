@@ -9,7 +9,7 @@ class TestRunner
 {
 public:
 	TestRunner();
-	int64_t runTest(ITest& test, int iterations);
+	int64_t runTest(ITest& test, void* func, int iterations, bool* verifyResult);
 };
 
 }
