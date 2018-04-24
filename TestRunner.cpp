@@ -9,7 +9,7 @@ TestRunner::TestRunner()
 {
 }
 
-int64_t TestRunner::runTest(ITest& test, int iterations, bool* verifyResult)
+int64_t TestRunner::runTest(ITest& test, void* func, int iterations, bool* verifyResult)
 {
 	int res;
 	struct timespec tp0, tp1;
@@ -17,12 +17,10 @@ int64_t TestRunner::runTest(ITest& test, int iterations, bool* verifyResult)
 	int64_t totalSum = 0;
 	int totalValidMeasures = 0;
 
-	bool tmpVerifyResult = true;
-
 	for (int iteration = 0; iteration < iterations; iteration++) {
 		res = clock_gettime(CLOCK_MONOTONIC_PRECISE, &tp0);
 
-		test.run();
+		test.run(func);
 
 		res |= clock_gettime(CLOCK_MONOTONIC_PRECISE, &tp1);
 
@@ -36,15 +34,9 @@ int64_t TestRunner::runTest(ITest& test, int iterations, bool* verifyResult)
 		}
 
 		if (verifyResult != NULL && iteration == 0) {
-			tmpVerifyResult = test.verify();
+			*verifyResult = test.verify();
 		}
 	}
-
-	if (verifyResult != NULL) {
-		*verifyResult = tmpVerifyResult;
-	}
-
-	//return totalSum / totalValidMeasures;
 
 	// return an approximation of the median
 	std::sort(nanos, nanos + totalValidMeasures);

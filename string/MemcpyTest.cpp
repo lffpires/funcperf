@@ -7,13 +7,10 @@
 namespace funcperf {
 namespace string {
 
-MemcpyTest::MemcpyTest(int bytesToCopy, int srcOffset, int dstOffset, void* (*func)(void* dst, const void* src, size_t len))
-: m_bytesToCopy(bytesToCopy)
-, m_srcOffset(srcOffset)
-, m_dstOffset(dstOffset)
-, m_func(func)
+MemcpyTest::MemcpyTest(const MemcpyTestParams& testParams)
+: m_testParams(testParams)
 {
-	m_bufferSize = std::max(srcOffset, dstOffset) + bytesToCopy + sizeof(long);
+	m_bufferSize = std::max(m_testParams.getSrcOffset(), m_testParams.getDstOffset()) + m_testParams.getBytesToCopy() + sizeof(long);
 	m_buffer = (char *)malloc(m_bufferSize);
 	m_verifyBuffer = (char *)malloc(m_bufferSize);
 
@@ -25,7 +22,7 @@ MemcpyTest::MemcpyTest(int bytesToCopy, int srcOffset, int dstOffset, void* (*fu
 
 	// prepare verification buffer
 	memcpy(m_verifyBuffer, m_buffer, m_bufferSize);
-	memcpy(m_verifyBuffer + dstOffset, m_verifyBuffer + srcOffset, m_bytesToCopy);
+	memcpy(m_verifyBuffer + m_testParams.getDstOffset(), m_verifyBuffer + m_testParams.getSrcOffset(), m_testParams.getBytesToCopy());
 }
 
 MemcpyTest::~MemcpyTest()
@@ -34,13 +31,14 @@ MemcpyTest::~MemcpyTest()
 	free(m_verifyBuffer);
 }
 
-void MemcpyTest::run()
+void MemcpyTest::run(void* func)
 {
-	(*m_func)(m_buffer + m_dstOffset, m_buffer + m_srcOffset, m_bytesToCopy);
+	void* (*memcpy_func)(void* dst, const void* src, size_t len) = (void* (*)(void*, const void*, size_t))func;
+
+	(*memcpy_func)(m_buffer + m_testParams.getDstOffset(), m_buffer + m_testParams.getSrcOffset(), m_testParams.getBytesToCopy());
 }
 
 bool MemcpyTest::verify()
-
 {
 	return memcmp(m_buffer, m_verifyBuffer, m_bufferSize) == 0;
 }
