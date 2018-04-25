@@ -36,10 +36,12 @@ StrcmpTest::StrcmpTest(const StrcmpTestParams& testParams)
 		}
 
 		if (i < m_testParams.getStrBLen()) {
-			m_strBBuffer[i + m_testParams.getMisalignment()] = strB;
+			m_strBBuffer[i + m_testParams.getMisalignment()] = strA;
 		}
 	}
 
+	m_strABuffer[m_testParams.getStrALen() + m_testParams.getMisalignment() - 1] = strA;
+	m_strBBuffer[m_testParams.getStrBLen() + m_testParams.getMisalignment() - 1] = strB;
 	m_strABuffer[m_testParams.getStrALen() + m_testParams.getMisalignment()] = '\0';
 	m_strBBuffer[m_testParams.getStrBLen() + m_testParams.getMisalignment()] = '\0';
 }
