@@ -3,3 +3,4 @@ SRCS+= \
 	StrcpyFunctionTest.cpp StrcpyTest.cpp \
 	StrncpyFunctionTest.cpp StrncpyTest.cpp \
 	StrcmpFunctionTest.cpp StrcmpTestParams.cpp StrcmpTest.cpp
+  
