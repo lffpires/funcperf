@@ -2,6 +2,8 @@
 
 #include "IFunctionTest.hpp"
 #include "string/MemcpyFunctionTest.hpp"
+#include "string/StrcpyFunctionTest.hpp"
+#include "string/StrncpyFunctionTest.hpp"
 
 #include <string>
 #include <iostream>
@@ -22,6 +24,8 @@ int main(int argc, char** argv)
 	std::map<std::string, std::shared_ptr<funcperf::IFunctionTest>> funcTestMap = {
 		// possible tests
 		{"memcpy", std::make_shared<funcperf::string::MemcpyFunctionTest>()},
+		{"strcpy", std::make_shared<funcperf::string::StrcpyFunctionTest>()},
+		{"strncpy", std::make_shared<funcperf::string::StrncpyFunctionTest>()},
 	};
 
 	// for now, using ugly homemade arg parsing, to avoid adding dependencies. I'm not proud of it, though
@@ -115,7 +119,7 @@ int main(int argc, char** argv)
 		bool testResult;
 
 		if (printHeader) {
-			std::cout << "id\t" << pTestParams->getTSVHeaders() << "\titerations\tavgNanos\ttestResult" << std::endl;
+			std::cout << "id\t" << pTestParams->getCSVHeaders("\t") << "\titerations\tavgNanos\ttestResult" << std::endl;
 			printHeader = false;
 		}
 
@@ -123,7 +127,7 @@ int main(int argc, char** argv)
 		int iterations = pTestParams->getIterations(testLength);
 		int64_t nanos = testRunner.runTest(*pTest, func, iterations, &testResult);
 
-		std::cout << pTestParams->getId() << "\t" << pTestParams->getTSVValues() << "\t" << iterations << "\t";
+		std::cout << pTest->getId() << "\t" << pTestParams->getCSVValues("\t") << "\t" << iterations << "\t";
 		std::cout << nanos << "\t" << (testResult ? "SUCCESS" : "FAILURE") << std::endl;
 	}
 

@@ -9,11 +9,11 @@
 namespace funcperf {
 namespace string {
 
-class MemcpyTest : public funcperf::ITest
+class StrcpyTest : public funcperf::ITest
 {
 public:
-	MemcpyTest(const MemcpyTestParams& testParams);
-	virtual ~MemcpyTest();
+	StrcpyTest(const MemcpyTestParams& testParams);
+	virtual ~StrcpyTest();
 
 	std::string getId();
 	void run(void* func);
@@ -22,9 +22,9 @@ public:
 private:
 	MemcpyTestParams m_testParams;
 
-	char* m_buffer;
+	char* m_srcBuffer;
+	char* m_dstBuffer;
 	char* m_verifyBuffer;
-	int m_bufferSize;
 };
 
 }
