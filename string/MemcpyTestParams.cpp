@@ -27,25 +27,20 @@ int MemcpyTestParams::getDstOffset()
 	return m_dstOffset;
 }
 
-std::string MemcpyTestParams::getId()
+std::string MemcpyTestParams::getCSVHeaders(const std::string& sep)
 {
 	std::stringstream ss;
 
-	ss << "MEMCPY_" << m_bytesToCopy << "_" << m_srcOffset << "_" << m_dstOffset;
+	ss << "bytesToCopy" << sep << "srcOffset" << sep << "dstOffset";
 
 	return ss.str();
 }
 
-std::string MemcpyTestParams::getTSVHeaders()
-{
-	return "bytesToCopy\tsrcOffset\tdstOffset";
-}
-
-std::string MemcpyTestParams::getTSVValues()
+std::string MemcpyTestParams::getCSVValues(const std::string& sep)
 {
 	std::stringstream ss;
 
-	ss << m_bytesToCopy << "\t" << m_srcOffset << "\t" << m_dstOffset;
+	ss << m_bytesToCopy << sep << m_srcOffset << sep << m_dstOffset;
 
 	return ss.str();
 }

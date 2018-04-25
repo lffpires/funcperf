@@ -15,9 +15,8 @@ public:
 	int getSrcOffset();
 	int getDstOffset();
 
-	std::string getId();
-	std::string getTSVHeaders();
-	std::string getTSVValues();
+	std::string getCSVHeaders(const std::string& sep);
+	std::string getCSVValues(const std::string& sep);
 	int getIterations(TestLength length);
 
 private:

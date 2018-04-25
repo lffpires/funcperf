@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <sstream>
 
 namespace funcperf {
 namespace string {
@@ -29,6 +30,15 @@ MemcpyTest::~MemcpyTest()
 {
 	free(m_buffer);
 	free(m_verifyBuffer);
+}
+
+std::string MemcpyTest::getId()
+{
+	std::stringstream ss;
+
+	ss << "MEMCPY_" << m_testParams.getCSVValues("_");
+
+	return ss.str();
 }
 
 void MemcpyTest::run(void* func)
