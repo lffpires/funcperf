@@ -4,6 +4,7 @@
 #include "string/MemcpyFunctionTest.hpp"
 #include "string/StrcpyFunctionTest.hpp"
 #include "string/StrncpyFunctionTest.hpp"
+#include "string/StrcmpFunctionTest.hpp"
 
 #include <string>
 #include <iostream>
@@ -26,6 +27,7 @@ int main(int argc, char** argv)
 		{"memcpy", std::make_shared<funcperf::string::MemcpyFunctionTest>()},
 		{"strcpy", std::make_shared<funcperf::string::StrcpyFunctionTest>()},
 		{"strncpy", std::make_shared<funcperf::string::StrncpyFunctionTest>()},
+		{"strcmp", std::make_shared<funcperf::string::StrcmpFunctionTest>()},
 	};
 
 	// for now, using ugly homemade arg parsing, to avoid adding dependencies. I'm not proud of it, though
