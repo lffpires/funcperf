@@ -21,6 +21,7 @@ int main(int argc, char** argv)
 	std::shared_ptr<funcperf::IFunctionTest> pFunctionTest = nullptr;
 
 	funcperf::TestLength testLength = funcperf::TestLength::normalTest;
+	bool showFailuresOnly = false;
 
 	std::map<std::string, std::shared_ptr<funcperf::IFunctionTest>> funcTestMap = {
 		// possible tests
@@ -76,6 +77,24 @@ int main(int argc, char** argv)
 				break;
 			}
 
+		} else if (strcmp(argv[curArg], "--show") == 0) {
+			curArg++;
+			if (curArg >= argc) {
+				cmdlineParseError = true;
+				break;
+			}
+
+			if (strcmp(argv[curArg], "all") == 0) {
+				showFailuresOnly = false;
+
+			} else if (strcmp(argv[curArg], "failures") == 0) {
+				showFailuresOnly = true;
+
+			} else {
+				cmdlineParseError = true;
+				break;
+			}
+
 		} else  {
 			cmdlineParseError = true;
 			break;
@@ -85,7 +104,7 @@ int main(int argc, char** argv)
 	}
 
 	if (pLibFilename == nullptr || pFunctionTest == nullptr || cmdlineParseError) {
-		std::cerr << "Usage: " << argv[0] << " --lib <libFilename> --test <testId> [--length short|normal|long]" << std::endl;
+		std::cerr << "Usage: " << argv[0] << " --lib <libFilename> --test <testId> [--length short|normal|long] [--show all|failures]" << std::endl;
 		std::cerr << std::endl;
 		std::cerr << "Possible values for 'testId':" << std::endl;
 		for (auto& kv : funcTestMap) {
@@ -129,8 +148,10 @@ int main(int argc, char** argv)
 		int iterations = pTestParams->getIterations(testLength);
 		int64_t nanos = testRunner.runTest(*pTest, func, iterations, &testResult);
 
-		std::cout << pTest->getId() << "\t" << pTestParams->getCSVValues("\t") << "\t" << iterations << "\t";
-		std::cout << nanos << "\t" << (testResult ? "SUCCESS" : "FAILURE") << std::endl;
+		if (showFailuresOnly == false || testResult == 0) {
+			std::cout << pTest->getId() << "\t" << pTestParams->getCSVValues("\t") << "\t" << iterations << "\t";
+			std::cout << nanos << "\t" << (testResult ? "SUCCESS" : "FAILURE") << std::endl;
+		}
 	}
 
 	dlclose(soHandle);
